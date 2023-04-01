@@ -87,7 +87,7 @@ function handleClick(event) {
 function select(element) {
   if (element.dataset.name.split("_")[0] !== TURN_NAME[turn]) return;
   selected = element;
-  calculate(selected);
+  calculateMoves(selected);
   element.classList.add("selected");
   validMoves.forEach((cell) => cell.classList.add("move"));
   canAttach.forEach((cell) => cell.classList.add("danger"));
