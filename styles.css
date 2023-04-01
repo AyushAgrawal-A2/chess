@@ -49,6 +49,6 @@ body {
   box-shadow: inset 0 0 calc(var(--cell-size) / 2) #ff2727;
 }
 
-.path {
+.move {
   box-shadow: inset 0 0 calc(var(--cell-size) / 2) #fdd700;
 }

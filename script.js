@@ -1,4 +1,3 @@
-const boardElement = document.querySelector(".board");
 const UTF_CODES = {
   WHITE_KING: "\u2654",
   WHITE_QUEEN: "\u2655",
@@ -59,18 +58,62 @@ const DEFAULT_BOARD = [
     "WHITE_ROOK",
   ],
 ];
+const TURN_NAME = ["WHITE", "BLACK"];
+
+const boardElement = document.querySelector(".board");
 document.addEventListener("click", handleClick);
 
 let board = [];
+let turn = 1; // turn is 0 for white, 1 for black
+let selected = null;
+let validMoves = [];
+let canAttach = [];
 
 reset();
-flip();
+// flip();
 
-function handleClick(event) {}
+function handleClick(event) {
+  if (!selected) {
+    if (event.target.dataset.symbol === "") return;
+    select(event.target);
+    return;
+  }
+  if (selected == event.target) {
+    deselect();
+    return;
+  }
+}
+
+function select(element) {
+  if (element.dataset.name.split("_")[0] !== TURN_NAME[turn]) return;
+  selected = element;
+  calculate(selected);
+  element.classList.add("selected");
+  validMoves.forEach((cell) => cell.classList.add("move"));
+  canAttach.forEach((cell) => cell.classList.add("danger"));
+}
+
+function calculateMoves(element) {}
+
+function deselect() {
+  selected.classList.remove("selected");
+  validMoves.forEach((cell) => cell.classList.remove("move"));
+  canAttach.forEach((cell) => cell.classList.remove("danger"));
+  selected = null;
+  validMoves = [];
+  canAttach = [];
+}
 
 function reset() {
-  turnWhite = true;
-  board = DEFAULT_BOARD.map((row) => row.map((cell) => cell));
+  board = DEFAULT_BOARD.map((row) =>
+    row.map((cell) => {
+      const cellElement = document.createElement("div");
+      cellElement.className = "cell";
+      cellElement.dataset.name = cell;
+      cellElement.dataset.symbol = UTF_CODES[cell] ?? "";
+      return cellElement;
+    })
+  );
   display();
 }
 
@@ -79,12 +122,7 @@ function display() {
   board.forEach((row) => {
     const rowElement = document.createElement("div");
     rowElement.className = "row";
-    row.forEach((cell) => {
-      const cellElement = document.createElement("div");
-      cellElement.className = "cell";
-      cellElement.dataset.symbol = UTF_CODES[cell] ?? "";
-      rowElement.appendChild(cellElement);
-    });
+    row.forEach((cell) => rowElement.appendChild(cell));
     boardElement.appendChild(rowElement);
   });
 }
