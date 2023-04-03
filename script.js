@@ -4,37 +4,31 @@ import {
   deselect,
   move,
   checkKing,
-  getCoordinates,
   canPlayerMove,
+  getKing,
 } from "./gameLogic.js";
 
 const boardElement = document.querySelector(".board");
+const gameStatusElement = document.querySelector(".game-status");
+const resetButtonElement = document.querySelector(".reset");
+const flipButtonElement = document.querySelector(".flip");
+const flipCheckBoxElement = document.querySelector(".flip-every-move");
 boardElement.addEventListener("click", handleBoardClick);
+resetButtonElement.addEventListener("click", resetGame);
+flipButtonElement.addEventListener("click", flipBoard);
+flipCheckBoxElement.addEventListener("change", flipCheckBox);
 
 // turn is 0 for white, 1 for black
 let board, turn, captured, selected;
 
 // flip is false for rendering white at bottom
-let flip = false;
+let flip = true,
+  flipEveryMove = false,
+  check,
+  canMove,
+  gameStatus;
 
 resetGame();
-
-function resetGame() {
-  board = DEFAULT_BOARD.map((row) =>
-    row.map((cell) => ({
-      name: cell,
-      color: cell.split("_")[0] ?? null,
-      type: cell.split("_")[1] ?? null,
-      selected: false,
-      validMove: false,
-      validAttack: false,
-    }))
-  );
-  turn = Math.floor(Math.random() * 2);
-  captured = [[], []];
-  selected = null;
-  displayBoard();
-}
 
 function handleBoardClick(event) {
   const cellXY = {
@@ -52,7 +46,9 @@ function handleBoardClick(event) {
       move(board, selected, cellXY);
       selected = deselect(board);
       turn ^= 1;
+      if (flipEveryMove) flip = turn ? true : false;
       if (cell.validAttack) captured[turn].push(cell.name);
+      displayGameStatus();
     } else if (event.target.dataset.symbol) {
       deselect(board);
       selected = select(board, turn, cellXY);
@@ -61,15 +57,53 @@ function handleBoardClick(event) {
   displayBoard();
 }
 
+function resetGame() {
+  board = DEFAULT_BOARD.map((row) =>
+    row.map((cell) => ({
+      name: cell,
+      color: cell.split("_")[0] ?? null,
+      type: cell.split("_")[1] ?? null,
+      selected: false,
+      validMove: false,
+      validAttack: false,
+    }))
+  );
+  turn = Math.floor(Math.random() * 2);
+  flip = turn ? true : false;
+  captured = [[], []];
+  selected = null;
+  displayGameStatus();
+  displayBoard();
+}
+
+function flipBoard() {
+  if (flipEveryMove) return;
+  flip = !flip;
+  displayBoard();
+}
+
+function flipCheckBox(event) {
+  flipEveryMove = event.target.checked;
+  if (flipEveryMove) flip = turn ? true : false;
+  displayBoard();
+}
+
+function displayGameStatus() {
+  canMove = canPlayerMove(board, turn);
+  check = !checkKing(board, turn, { x: 0, y: 0 }, { x: 0, y: 0 });
+  if (turn) gameStatus = "Black's Turn";
+  else gameStatus = "White's Turn";
+  if (check && canMove) gameStatus += " / Check";
+  else if (check && !canMove)
+    gameStatus = turn === 0 ? "Black Won..!!" : "White Won..!!";
+  else if (!check && !canMove) gameStatus = "Draw..!!";
+  gameStatusElement.textContent = gameStatus;
+}
+
 function displayBoard() {
-  const check = !checkKing(board, turn, { x: 0, y: 0 }, { x: 0, y: 0 });
-  const moves = canPlayerMove(board, turn);
   if (check) {
-    const kingXY = getCoordinates(
-      board,
-      (cell) => cell.name === TURN_NAME[turn] + "_KING"
-    );
-    board[kingXY.x][kingXY.y].validAttack = true;
+    const { x: kingX, y: kingY } = getKing(board, turn);
+    board[kingX][kingY].validAttack = true;
   }
   boardElement.innerHTML = "";
   if (!flip) {
@@ -84,13 +118,13 @@ function displayBoard() {
     board
       .slice()
       .reverse()
-      .forEach((row) => {
+      .forEach((row, x) => {
         const rowElement = createRowElement();
         row
           .slice()
           .reverse()
-          .forEach((cell) =>
-            rowElement.appendChild(createCellElement(cell, x, y))
+          .forEach((cell, y) =>
+            rowElement.appendChild(createCellElement(cell, 7 - x, 7 - y))
           );
         boardElement.appendChild(rowElement);
       });

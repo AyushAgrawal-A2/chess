@@ -44,11 +44,8 @@ export function calculateMoves(board, turn, cellXY) {
         (color === "BLACK" && cellXY.x === 1))
     ? 2
     : 1;
-
   for (let del of MOVE_RULES[type].delta) {
-    let nextX = cellXY.x;
-    let nextY = cellXY.y;
-    for (let x = 0; x < maxMoves; x++) {
+    for (let x = 0, nextX = cellXY.x, nextY = cellXY.y; x < maxMoves; x++) {
       nextX += direction * del[0];
       nextY += direction * del[1];
       if (invalidCell(nextX, nextY)) break;
@@ -63,7 +60,6 @@ export function calculateMoves(board, turn, cellXY) {
       }
     }
   }
-
   if (type === "PAWN") {
     validAttacks.length = 0;
     for (let del of MOVE_RULES[type].attack) {
@@ -87,10 +83,7 @@ export function checkKing(board, turn, source, target) {
   move(tempBoard, source, target);
 
   //find current player's king
-  const kingXY = getCoordinates(
-    tempBoard,
-    (cell) => cell.name === TURN_NAME[turn] + "_KING"
-  );
+  const kingXY = getKing(board, turn);
 
   //search if any piece can attack king
   for (let key in MOVE_RULES) {
@@ -101,19 +94,14 @@ export function checkKing(board, turn, source, target) {
     const direction = color === MOVE_RULES[type].invert ? -1 : 1;
     const maxMoves = MOVE_RULES[type].unlimited ? 8 : 1;
     for (let del of delta) {
-      let nextX = kingXY.x;
-      let nextY = kingXY.y;
-      for (let x = 0; x < maxMoves; x++) {
+      for (let x = 0, nextX = kingXY.x, nextY = kingXY.y; x < maxMoves; x++) {
         nextX += direction * del[0];
         nextY += direction * del[1];
         if (invalidCell(nextX, nextY)) break;
         const { color: nextColor, type: nextType } = tempBoard[nextX][nextY];
         if (!nextColor) continue;
-        if (nextColor === color) break;
-        if (nextColor !== color) {
-          if (nextType === type) return false;
-          break;
-        }
+        if (nextColor !== color && nextType === type) return false;
+        break;
       }
     }
   }
@@ -121,9 +109,6 @@ export function checkKing(board, turn, source, target) {
 }
 
 export function canPlayerMove(board, turn) {
-  //create a duplicate board
-  const tempBoard = board.map((row) => row.map((cell) => ({ ...cell })));
-
   //for each check if there is a possible move
   return board.some((row, x) =>
     row.some((_, y) => {
@@ -136,11 +121,11 @@ export function canPlayerMove(board, turn) {
   );
 }
 
-export function getCoordinates(board, callback) {
+export function getKing(board, turn) {
   let x, y;
   board.find((row, r) =>
     row.find((cell, c) => {
-      if (callback(cell)) {
+      if (cell.name === TURN_NAME[turn] + "_KING") {
         x = r;
         y = c;
         return true;
@@ -151,10 +136,10 @@ export function getCoordinates(board, callback) {
   return { x, y };
 }
 
-export function getElement(board, { x, y }) {
+function getElement(board, { x, y }) {
   return board[x][y];
 }
 
-export function invalidCell(x, y) {
+function invalidCell(x, y) {
   return x < 0 || y < 0 || x > 7 || y > 7;
 }
