@@ -65,8 +65,12 @@ export const MOVE_RULES = {
     delta: [
       [1, 0],
       [0, 1],
+      [1, 1],
+      [1, -1],
       [-1, 0],
       [0, -1],
+      [-1, -1],
+      [-1, 1],
     ],
     unlimited: false,
   },
