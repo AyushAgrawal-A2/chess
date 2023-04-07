@@ -15,8 +15,11 @@
     <div class="game-status"></div>
     <button class="reset">Reset</button>
     <button class="flip">Flip Board</button>
-    <input type="checkbox" class="flip-every-move">
+    <label for="flip-checkbox">Flip/Move</label>
+    <input id="flip-checkbox" type="checkbox" class="flip-every-move">
+    <button class="undo">Undo</button>
   </div>
+  <div class="captured"></div>
   <div class="board">
     <!-- <div class="row">
       <div class="cell" data-symbol="&#9820"></div>
@@ -99,6 +102,7 @@
       <div class="cell" data-symbol="&#9814"></div>
     </div> -->
   </div>
+  <div class="captured"></div>
 </body>
 
 </html>

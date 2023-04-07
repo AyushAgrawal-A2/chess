@@ -14,8 +14,10 @@ body {
   justify-content: center;
 }
 
-.game-controls {
+.game-controls,
+.captured {
   background-color: white;
+  height: calc(var(--cell-size) / 2);
 }
 
 .row {
@@ -34,6 +36,16 @@ body {
 
 .cell::before {
   content: attr(data-symbol);
+}
+
+.cell.small {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(var(--cell-size) / 2);
+  width: calc(var(--cell-size) / 2);
+  border: 1px solid black;
+  font-size: calc(var(--cell-size) * 0.75 / 2);
 }
 
 .row:nth-child(odd) .cell:nth-child(odd),

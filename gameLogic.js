@@ -1,9 +1,16 @@
 import { MOVE_RULES, TURN_NAME } from "./gameConstants.js";
 
-export function select(board, turn, cellXY) {
+// this function selects the piece at cellXY coordinate and highlights all valid moves / attacks on board
+export function select(board, turn, cellXY, history = []) {
+  deselect(board);
   const cell = getElement(board, cellXY);
   if (!cell.name || cell.color !== TURN_NAME[turn]) return null;
-  const { validMoves, validAttacks } = calculateMoves(board, turn, cellXY);
+  const { validMoves, validAttacks } = calculateMoves(
+    board,
+    turn,
+    cellXY,
+    history
+  );
   cell.selected = true;
   validMoves.forEach(({ x, y }) => (board[x][y].validMove = true));
   validAttacks.forEach(({ x, y }) => (board[x][y].validAttack = true));
@@ -21,77 +28,160 @@ export function deselect(board) {
   return null;
 }
 
-export function move(board, source, target) {
+// this function moves the piece from source to target
+export function move(board, source, target, history = []) {
   const sourceElement = getElement(board, source);
-  board[target.x][target.y] = { ...sourceElement };
+  const targetElement = getElement(board, target);
+  // record the move as history item for undo function
+  const historyItem = {
+    source,
+    sourceElement: { ...sourceElement },
+    target,
+    targetElement: { ...targetElement },
+    attack: targetElement.validAttack,
+    sideEffects: [],
+  };
+  // castling move, rook also has to be moved
+  if (sourceElement.type === "KING" && Math.abs(source.y - target.y) === 2) {
+    const rookSource = { x: source.x, y: target.y === 2 ? 0 : 7 };
+    const rookTarget = { x: source.x, y: target.y === 2 ? 3 : 5 };
+    move(board, rookSource, rookTarget, historyItem.sideEffects);
+  }
+  // en-passant, moving pawn back and then capturing it
+  if (
+    sourceElement.type === "PAWN" &&
+    targetElement.validAttack &&
+    !targetElement.name &&
+    source.y !== target.y
+  ) {
+    const pawnSource = { x: source.x, y: target.y };
+    const pawnTarget = { ...target };
+    move(board, pawnSource, pawnTarget, historyItem.sideEffects);
+  }
+  board[target.x][target.y] = { ...sourceElement, moved: true };
   sourceElement.name = "";
   sourceElement.color = "";
   sourceElement.type = "";
+  sourceElement.moved = false;
+  history.push(historyItem);
 }
 
-export function calculateMoves(board, turn, cellXY) {
+export function undoMove(board, prevMove) {
+  const { source, sourceElement, target, targetElement, sideEffects } =
+    prevMove;
+  if (sideEffects.length > 0)
+    for (const sideEffect of sideEffects) undoMove(board, sideEffect);
+  board[source.x][source.y] = { ...sourceElement };
+  board[target.x][target.y] = { ...targetElement };
+}
+
+// this function calculates all valid moves / attacks from a piece attch cellXY coordinate
+export function calculateMoves(board, turn, cellXY, history = []) {
   const validMoves = [],
     validAttacks = [];
   const cell = getElement(board, cellXY);
   if (!cell.name || cell.color !== TURN_NAME[turn])
     return { validMoves, validAttacks };
-  const { color, type } = cell;
-  const direction = color === MOVE_RULES[type].invert ? -1 : 1;
-  const maxMoves = MOVE_RULES[type].unlimited
+  const direction = cell.color === "WHITE" ? -1 : 1;
+  const maxMoves = MOVE_RULES[cell.type].unlimited
     ? 8
-    : type === "PAWN" &&
-      ((color === "WHITE" && cellXY.x === 6) ||
-        (color === "BLACK" && cellXY.x === 1))
+    : cell.type === "PAWN" && !cell.moved
     ? 2
     : 1;
-  for (let del of MOVE_RULES[type].delta) {
-    for (let x = 0, nextX = cellXY.x, nextY = cellXY.y; x < maxMoves; x++) {
+  for (let del of MOVE_RULES[cell.type].move) {
+    for (let m = 0, nextX = cellXY.x, nextY = cellXY.y; m < maxMoves; m++) {
       nextX += direction * del[0];
       nextY += direction * del[1];
       if (invalidCell(nextX, nextY)) break;
       const nextColor = board[nextX][nextY].color;
-      if (nextColor === color) break;
+      if (nextColor === cell.color) break;
       if (!checkKing(board, turn, cellXY, { x: nextX, y: nextY })) continue;
       if (!nextColor) {
         validMoves.push({ x: nextX, y: nextY });
-      } else if (color !== nextColor) {
+        continue;
+      }
+      if (cell.color !== nextColor) {
         validAttacks.push({ x: nextX, y: nextY });
         break;
       }
     }
   }
-  if (type === "PAWN") {
+  // pawns attack differently than they move, recalculate valid attack for pawn
+  if (cell.type === "PAWN") {
     validAttacks.length = 0;
-    for (let del of MOVE_RULES[type].attack) {
+    for (let del of MOVE_RULES[cell.type].attack) {
       const nextX = cellXY.x + direction * del[0];
       const nextY = cellXY.y + direction * del[1];
       if (invalidCell(nextX, nextY)) continue;
+      if (!checkKing(board, turn, cellXY, { x: nextX, y: nextY })) continue;
       const nextColor = board[nextX][nextY].color;
-      if (nextColor && color !== nextColor) {
+      if (nextColor && cell.color !== nextColor) {
         validAttacks.push({ x: nextX, y: nextY });
+      }
+      // en-passant
+      else if (!nextColor && cell.moved) {
+        const prevMove = history.slice(-1)[0];
+        if (
+          prevMove.sourceElement.type === "PAWN" &&
+          Math.abs(prevMove.source.x - prevMove.target.x) === 2 &&
+          cellXY.x === prevMove.target.x &&
+          nextY === prevMove.target.y
+        ) {
+          validAttacks.push({ x: nextX, y: nextY });
+        }
       }
     }
   }
+  // castling
+  if (cell.type === "KING" && !cell.moved) {
+    // king side
+    checkCastling(board, turn, cellXY, validMoves, 1);
+    // queen side
+    checkCastling(board, turn, cellXY, validMoves, -1);
+  }
+
   return { validMoves, validAttacks };
 }
 
+// this function check and adds possible castling to validMoves array
+function checkCastling(board, turn, kingXY, validMoves, dir) {
+  // check rook has not moved
+  const rookXY = { x: kingXY.x, y: kingXY.y + (dir === 1 ? 3 : -4) };
+  const rook = getElement(board, rookXY);
+  if (rook.type !== "ROOK" || rook.moved) return;
+
+  // cell in between king & rook should be empty
+  for (let y = kingXY.y + dir; y !== rookXY.y; y += dir) {
+    if (board[kingXY.x][y].name) return;
+  }
+
+  // king should not be under attack, pass through or end up under attack
+  const rookTargetXY = { x: kingXY.x, y: kingXY.y + dir };
+  const kingTargetXY = { x: kingXY.x, y: kingXY.y + dir * 2 };
+  if (!checkKing(board, turn, kingXY, kingXY)) return;
+  if (!checkKing(board, turn, kingXY, rookTargetXY)) return;
+  if (!checkKing(board, turn, kingXY, kingTargetXY)) return;
+  validMoves.push(kingTargetXY);
+}
+
+// this function checks if the current king is safe after any piece moves from source to target
 export function checkKing(board, turn, source, target) {
-  //create a duplicate board
+  // create a duplicate board
   const tempBoard = board.map((row) => row.map((cell) => ({ ...cell })));
 
-  //make the move in duplicate board
+  // make the move in duplicate board
   move(tempBoard, source, target);
 
   //find current player's king
-  const kingXY = getKing(board, turn);
+  const kingXY = getKing(tempBoard, turn);
 
-  //search if any piece can attack king
+  // search if any piece can attack king
   for (let key in MOVE_RULES) {
     const color = TURN_NAME[turn];
     const type = key;
     const delta =
-      type === "PAWN" ? MOVE_RULES[type].attack : MOVE_RULES[type].delta;
-    const direction = color === MOVE_RULES[type].invert ? -1 : 1;
+      type === "PAWN" ? MOVE_RULES[type].attack : MOVE_RULES[type].move;
+    const direction = type === "PAWN" && color === "WHITE" ? -1 : 1;
     const maxMoves = MOVE_RULES[type].unlimited ? 8 : 1;
     for (let del of delta) {
       for (let x = 0, nextX = kingXY.x, nextY = kingXY.y; x < maxMoves; x++) {
@@ -108,19 +198,26 @@ export function checkKing(board, turn, source, target) {
   return true;
 }
 
-export function canPlayerMove(board, turn) {
-  //for each check if there is a possible move
+// this function calculates if the current player has any move left
+export function canPlayerMove(board, turn, history) {
+  // for each check if there is a possible move
   return board.some((row, x) =>
     row.some((_, y) => {
-      const { validMoves, validAttacks } = calculateMoves(board, turn, {
-        x,
-        y,
-      });
+      const { validMoves, validAttacks } = calculateMoves(
+        board,
+        turn,
+        {
+          x,
+          y,
+        },
+        history
+      );
       return validMoves.length + validAttacks.length > 0;
     })
   );
 }
 
+// this function finds the location of current players king
 export function getKing(board, turn) {
   let x, y;
   board.find((row, r) =>

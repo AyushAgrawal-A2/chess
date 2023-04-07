@@ -1,3 +1,4 @@
+// default game positions
 export const DEFAULT_BOARD = [
   [
     "BLACK_ROOK",
@@ -45,6 +46,7 @@ export const DEFAULT_BOARD = [
   ],
 ];
 
+// utf codes for each piece
 export const UTF_CODES = {
   WHITE_KING: "\u2654",
   WHITE_QUEEN: "\u2655",
@@ -60,9 +62,10 @@ export const UTF_CODES = {
   BLACK_PAWN: "\u265F",
 };
 
+// piece wise movement / attack rules
 export const MOVE_RULES = {
   KING: {
-    delta: [
+    move: [
       [1, 0],
       [0, 1],
       [1, 1],
@@ -75,7 +78,7 @@ export const MOVE_RULES = {
     unlimited: false,
   },
   QUEEN: {
-    delta: [
+    move: [
       [1, 0],
       [0, 1],
       [1, 1],
@@ -88,7 +91,7 @@ export const MOVE_RULES = {
     unlimited: true,
   },
   ROOK: {
-    delta: [
+    move: [
       [1, 0],
       [0, 1],
       [-1, 0],
@@ -97,7 +100,7 @@ export const MOVE_RULES = {
     unlimited: true,
   },
   BISHOP: {
-    delta: [
+    move: [
       [1, 1],
       [1, -1],
       [-1, -1],
@@ -106,7 +109,7 @@ export const MOVE_RULES = {
     unlimited: true,
   },
   KNIGHT: {
-    delta: [
+    move: [
       [2, 1],
       [2, -1],
       [1, 2],
@@ -119,9 +122,8 @@ export const MOVE_RULES = {
     unlimited: false,
   },
   PAWN: {
-    delta: [[1, 0]],
+    move: [[1, 0]],
     unlimited: false,
-    invert: "WHITE",
     attack: [
       [1, 1],
       [1, -1],
