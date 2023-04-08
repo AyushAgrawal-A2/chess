@@ -132,3 +132,6 @@ export const MOVE_RULES = {
 };
 
 export const TURN_NAME = ["WHITE", "BLACK"];
+
+// options for pawn promotion
+export const PAWN_PROMOTION = ["ROOK", "KNIGHT", "BISHOP", "QUEEN"];

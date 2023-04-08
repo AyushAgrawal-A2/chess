@@ -20,6 +20,16 @@ body {
   height: calc(var(--cell-size) / 2);
 }
 
+.board {
+  height: calc(var(--cell-size) * 8);
+  width: calc(var(--cell-size) * 8);
+}
+
+.modal {
+  display: flex;
+  background-color: white;
+}
+
 .row {
   display: flex;
 }

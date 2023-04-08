@@ -1,6 +1,6 @@
 import { MOVE_RULES, TURN_NAME } from "./gameConstants.js";
 
-// this function selects the piece at cellXY coordinate and highlights all valid moves / attacks on board
+// this function selects the piece at cellXY coordinate and highlights all valid moves / attacks on board for that piece
 export function select(board, turn, cellXY, history = []) {
   deselect(board);
   const cell = getElement(board, cellXY);
@@ -33,6 +33,7 @@ export function move(board, source, target, history = []) {
   const sourceElement = getElement(board, source);
   const targetElement = getElement(board, target);
   // record the move as history item for undo function
+  // castling and en-passent have side effects where more than 2 cell are effected, these are saved separately
   const historyItem = {
     source,
     sourceElement: { ...sourceElement },
@@ -64,6 +65,26 @@ export function move(board, source, target, history = []) {
   sourceElement.type = "";
   sourceElement.moved = false;
   history.push(historyItem);
+  // pawn promotion - pawn has reach end, dont't change turn
+  if (
+    board[target.x][target.y].type === "PAWN" &&
+    (target.x === 7 || target.x === 0)
+  )
+    return false;
+  return true;
+}
+
+export function promotePawn(board, name) {
+  board.find((row, x) => {
+    if (x !== 0 && x !== 7) return false;
+    return row.find((cell) => {
+      if (cell.type === "PAWN") {
+        cell.name = name;
+        [cell.color, cell.type] = name.split("_");
+        return true;
+      }
+    });
+  });
 }
 
 export function undoMove(board, prevMove) {
@@ -75,7 +96,7 @@ export function undoMove(board, prevMove) {
   board[target.x][target.y] = { ...targetElement };
 }
 
-// this function calculates all valid moves / attacks from a piece attch cellXY coordinate
+// this function calculates all valid moves / attacks from a piece at cellXY coordinate
 export function calculateMoves(board, turn, cellXY, history = []) {
   const validMoves = [],
     validAttacks = [];

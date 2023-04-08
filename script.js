@@ -1,4 +1,9 @@
-import { DEFAULT_BOARD, UTF_CODES, TURN_NAME } from "./gameConstants.js";
+import {
+  DEFAULT_BOARD,
+  UTF_CODES,
+  TURN_NAME,
+  PAWN_PROMOTION,
+} from "./gameConstants.js";
 import {
   select,
   deselect,
@@ -7,9 +12,11 @@ import {
   canPlayerMove,
   getKing,
   undoMove,
+  promotePawn,
 } from "./gameLogic.js";
 
 const boardElement = document.querySelector(".board");
+const modalElement = document.querySelector(".modal");
 const gameStatusElement = document.querySelector(".game-status");
 const resetButtonElement = document.querySelector(".reset");
 const flipButtonElement = document.querySelector(".flip");
@@ -18,32 +25,40 @@ const undoButtonElement = document.querySelector(".undo");
 const capturedElements = document.querySelectorAll(".captured");
 
 boardElement.addEventListener("click", handleBoardClick);
+modalElement.addEventListener("click", handleModalClick);
 resetButtonElement.addEventListener("click", resetGame);
 flipButtonElement.addEventListener("click", flipBoard);
 flipCheckBoxElement.addEventListener("change", flipCheckBox);
 undoButtonElement.addEventListener("click", undo);
 
 // turn is 0 for white, 1 for black
-let board, turn, captured, selected, history;
-
 // flip is false for rendering white at bottom
-let flip = true,
+let board,
+  turn,
+  captured,
+  selected,
+  history,
+  flip,
   flipEveryMove = false,
   check,
   canMove,
-  gameStatus;
+  gameStatus,
+  waitForPromotion;
 
 resetGame();
 
 function handleBoardClick(event) {
+  // if pawn has to be promoted, ignore board clicks
+  if (waitForPromotion) return;
+
+  if (!event.target.dataset.x) return;
   // get x, y coordinate of the clicked cell
   const cellXY = {
     x: parseInt(event.target.dataset.x),
     y: parseInt(event.target.dataset.y),
   };
-  if (isNaN(cellXY.x)) return;
 
-  // if no piece is selected, select this piece and highlight valid moves
+  // if no piece is selected, select this piece and highlight valid moves / attacks
   if (!selected) {
     if (!event.target.dataset.symbol) return;
     selected = select(board, turn, cellXY, history);
@@ -62,9 +77,14 @@ function handleBoardClick(event) {
           cell.name !== "" ? cell.name : TURN_NAME[turn ^ 1] + "_PAWN"
         );
       }
-      move(board, selected, cellXY, history);
+      // if move is complete change turn, else pawn needs to be promoted
+      if (move(board, selected, cellXY, history)) turn ^= 1;
+      else {
+        // change pawn promotion flag and display modal
+        waitForPromotion = true;
+        displayModal();
+      }
       selected = deselect(board);
-      turn ^= 1;
       displayGameStatus();
     }
     // if any other piece is clicked, select this piece
@@ -75,6 +95,17 @@ function handleBoardClick(event) {
     else selected = deselect(board);
   }
   // render the changed board to display
+  displayBoard();
+}
+
+function handleModalClick(event) {
+  if (!waitForPromotion) return;
+  if (!event.target.dataset.name) return;
+  promotePawn(board, event.target.dataset.name);
+  waitForPromotion = false;
+  removeModal();
+  turn ^= 1;
+  displayGameStatus();
   displayBoard();
 }
 
@@ -95,6 +126,7 @@ function resetGame() {
   turn = Math.floor(Math.random() * 2);
   // orient the board as per the turn
   flip = turn ? true : false;
+  waitForPromotion = false;
   // empty captured and selected variables
   captured = [[], []];
   selected = null;
@@ -181,6 +213,17 @@ function displayBoard() {
   );
 }
 
+function displayModal() {
+  modalElement.innerHTML = "";
+  PAWN_PROMOTION.forEach((option) =>
+    modalElement.append(createPromotionElement(option))
+  );
+}
+
+function removeModal() {
+  modalElement.innerHTML = "";
+}
+
 function createRowElement() {
   const rowElement = document.createElement("div");
   rowElement.className = "row";
@@ -204,4 +247,13 @@ function createSmallCellElement(item) {
   smallCellElement.className = "cell small";
   smallCellElement.dataset.symbol = UTF_CODES[item] ?? "";
   return smallCellElement;
+}
+
+function createPromotionElement(option) {
+  const promotionElement = document.createElement("div");
+  const name = TURN_NAME[turn] + "_" + option;
+  promotionElement.className = "cell";
+  promotionElement.dataset.symbol = UTF_CODES[name];
+  promotionElement.dataset.name = name;
+  return promotionElement;
 }
