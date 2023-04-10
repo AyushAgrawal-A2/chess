@@ -11,104 +11,18 @@
 </head>
 
 <body>
-  <div class="game-controls">
+  <div class="game-container">
     <div class="game-status"></div>
-    <button class="reset">Reset</button>
-    <button class="flip">Flip Board</button>
-    <label for="flip-checkbox">Flip/Move</label>
-    <input id="flip-checkbox" type="checkbox" class="flip-every-move">
-    <button class="undo">Undo</button>
+    <div class="game-controls">
+      <button class="flip">Flip Board<input id="flip-checkbox" type="checkbox" class="flip-every-move"></button>
+      <button class="undo">Undo</button>
+      <button class="reset">Reset Game</button>
+    </div>
+    <div class="board"></div>
+    <div class="captured top"></div>
+    <div class="captured bottom"></div>
+    <div class="modal"></div>
   </div>
-  <div class="captured"></div>
-  <div class="board">
-    <!-- <div class="row">
-      <div class="cell" data-symbol="&#9820"></div>
-      <div class="cell selected" data-symbol="&#9822"></div>
-      <div class="cell" data-symbol="&#9821"></div>
-      <div class="cell" data-symbol="&#9819"></div>
-      <div class="cell danger" data-symbol="&#9818"></div>
-      <div class="cell" data-symbol="&#9821"></div>
-      <div class="cell" data-symbol="&#9822"></div>
-      <div class="cell" data-symbol="&#9820"></div>
-    </div>
-    <div class="row">
-      <div class="cell" data-symbol="&#9823"></div>
-      <div class="cell" data-symbol="&#9823"></div>
-      <div class="cell" data-symbol="&#9823"></div>
-      <div class="cell" data-symbol="&#9823"></div>
-      <div class="cell" data-symbol="&#9823"></div>
-      <div class="cell" data-symbol="&#9823"></div>
-      <div class="cell" data-symbol="&#9823"></div>
-      <div class="cell" data-symbol="&#9823"></div>
-    </div>
-    <div class="row">
-      <div class="cell move"></div>
-      <div class="cell"></div>
-      <div class="cell move"></div>
-      <div class="cell"></div>
-      <div class="cell"></div>
-      <div class="cell"></div>
-      <div class="cell"></div>
-      <div class="cell"></div>
-    </div>
-    <div class="row">
-      <div class="cell"></div>
-      <div class="cell"></div>
-      <div class="cell"></div>
-      <div class="cell"></div>
-      <div class="cell"></div>
-      <div class="cell"></div>
-      <div class="cell"></div>
-      <div class="cell"></div>
-    </div>
-    <div class="row">
-      <div class="cell"></div>
-      <div class="cell"></div>
-      <div class="cell"></div>
-      <div class="cell"></div>
-      <div class="cell"></div>
-      <div class="cell"></div>
-      <div class="cell"></div>
-      <div class="cell"></div>
-    </div>
-    <div class="row">
-      <div class="cell"></div>
-      <div class="cell"></div>
-      <div class="cell"></div>
-      <div class="cell"></div>
-      <div class="cell"></div>
-      <div class="cell"></div>
-      <div class="cell"></div>
-      <div class="cell"></div>
-    </div>
-    <div class="row">
-      <div class="cell" data-symbol="&#9817"></div>
-      <div class="cell" data-symbol="&#9817"></div>
-      <div class="cell" data-symbol="&#9817"></div>
-      <div class="cell" data-symbol="&#9817"></div>
-      <div class="cell" data-symbol="&#9817"></div>
-      <div class="cell" data-symbol="&#9817"></div>
-      <div class="cell" data-symbol="&#9817"></div>
-      <div class="cell" data-symbol="&#9817"></div>
-    </div>
-    <div class="row">
-      <div class="cell" data-symbol="&#9814"></div>
-      <div class="cell" data-symbol="&#9816"></div>
-      <div class="cell" data-symbol="&#9815"></div>
-      <div class="cell" data-symbol="&#9813"></div>
-      <div class="cell danger" data-symbol="&#9812"></div>
-      <div class="cell" data-symbol="&#9815"></div>
-      <div class="cell" data-symbol="&#9816"></div>
-      <div class="cell" data-symbol="&#9814"></div>
-    </div> -->
-  </div>
-  <div class="modal">
-    <!-- <div class="cell" data-symbol="&#9820"></div>
-    <div class="cell" data-symbol="&#9822"></div>
-    <div class="cell" data-symbol="&#9821"></div>
-    <div class="cell" data-symbol="&#9819"></div> -->
-  </div>
-  <div class="captured"></div>
 </body>
 
 </html>

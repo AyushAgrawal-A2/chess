@@ -4,6 +4,7 @@ import {
   TURN_NAME,
   PAWN_PROMOTION,
 } from "./gameConstants.js";
+
 import {
   select,
   deselect,
@@ -16,20 +17,15 @@ import {
 } from "./gameLogic.js";
 
 const boardElement = document.querySelector(".board");
+const capturedElements = document.querySelectorAll(".captured");
 const modalElement = document.querySelector(".modal");
 const gameStatusElement = document.querySelector(".game-status");
-const resetButtonElement = document.querySelector(".reset");
-const flipButtonElement = document.querySelector(".flip");
-const flipCheckBoxElement = document.querySelector(".flip-every-move");
-const undoButtonElement = document.querySelector(".undo");
-const capturedElements = document.querySelectorAll(".captured");
+const gameControls = document.querySelector(".game-controls");
 
 boardElement.addEventListener("click", handleBoardClick);
 modalElement.addEventListener("click", handleModalClick);
-resetButtonElement.addEventListener("click", resetGame);
-flipButtonElement.addEventListener("click", flipBoard);
-flipCheckBoxElement.addEventListener("change", flipCheckBox);
-undoButtonElement.addEventListener("click", undo);
+gameControls.addEventListener("click", handleControlsClick);
+window.addEventListener("resize", handleWindowResize);
 
 // turn is 0 for white, 1 for black
 // flip is false for rendering white at bottom
@@ -63,13 +59,16 @@ function handleBoardClick(event) {
     if (!event.target.dataset.symbol) return;
     selected = select(board, turn, cellXY, history);
   }
+
   // if already a piece is selected, either make a move to this cell or deselect the previous piece.
   else {
     const cell = board[cellXY.x][cellXY.y];
+
     // if same piece is clicked, deselect the piece
     if (selected.x === cellXY.x && selected.y === cellXY.y) {
       selected = deselect(board);
     }
+
     // if a valid move / attack is selected make the move
     else if (cell.validMove || cell.validAttack) {
       if (cell.validAttack) {
@@ -77,20 +76,20 @@ function handleBoardClick(event) {
           cell.name !== "" ? cell.name : TURN_NAME[turn ^ 1] + "_PAWN"
         );
       }
+
       // if move is complete change turn, else pawn needs to be promoted
       if (move(board, selected, cellXY, history)) turn ^= 1;
-      else {
-        // change pawn promotion flag and display modal
-        waitForPromotion = true;
-        displayModal();
-      }
+      // change pawn promotion flag and display modal
+      else waitForPromotion = true;
       selected = deselect(board);
       displayGameStatus();
     }
+
     // if any other piece is clicked, select this piece
     else if (event.target.dataset.symbol) {
       selected = select(board, turn, cellXY, history);
     }
+
     // empty cell is clicked which is not a valid move, deselect the previous piece
     else selected = deselect(board);
   }
@@ -103,10 +102,21 @@ function handleModalClick(event) {
   if (!event.target.dataset.name) return;
   promotePawn(board, event.target.dataset.name);
   waitForPromotion = false;
-  removeModal();
   turn ^= 1;
   displayGameStatus();
   displayBoard();
+}
+
+function handleControlsClick(event) {
+  if (event.target.classList.contains("flip")) flipBoard();
+  else if (event.target.classList.contains("flip-every-move"))
+    flipCheckBox(event);
+  else if (event.target.classList.contains("undo")) undo();
+  else if (event.target.classList.contains("reset")) resetGame();
+}
+
+function handleWindowResize() {
+  if (waitForPromotion) displayModal();
 }
 
 function resetGame() {
@@ -122,15 +132,19 @@ function resetGame() {
       validAttack: false,
     }))
   );
+
   // select first turn randomly
   turn = Math.floor(Math.random() * 2);
+
   // orient the board as per the turn
   flip = turn ? true : false;
   waitForPromotion = false;
+
   // empty captured and selected variables
   captured = [[], []];
   selected = null;
   history = [];
+
   // display the new board and game status
   displayGameStatus();
   displayBoard();
@@ -152,9 +166,11 @@ function undo() {
   if (history.length === 0) return;
   const prevMove = history.pop();
   turn = prevMove.sourceElement.color === "WHITE" ? 0 : 1;
+  if (flipEveryMove) flip = turn ? true : false;
   if (prevMove.attack) captured[turn].pop();
   undoMove(board, prevMove);
   selected = deselect(board);
+  waitForPromotion = false;
   displayGameStatus();
   displayBoard();
 }
@@ -162,18 +178,22 @@ function undo() {
 function displayGameStatus() {
   // check if there are any possible moves
   canMove = canPlayerMove(board, turn, history);
+
   // check if the king is in check status
   check = !checkKing(board, turn, { x: 0, y: 0 }, { x: 0, y: 0 });
+
   if (flipEveryMove) flip = turn ? true : false;
   if (turn) gameStatus = "Black's Turn";
   else gameStatus = "White's Turn";
+
   // if king is in check, add in status
-  if (check && canMove) gameStatus += " / Check";
+  if (check && canMove) gameStatus += " - Check";
   // if king is in check and there are no moves left, other player won
   else if (check && !canMove)
     gameStatus = turn === 0 ? "Black Won..!!" : "White Won..!!";
   // if king is not in check and no moves left, stale mate / draw
   else if (!check && !canMove) gameStatus = "Draw..!!";
+
   gameStatusElement.textContent = gameStatus;
 }
 
@@ -181,13 +201,15 @@ function displayBoard() {
   // if king is in check, add danger attribute to display
   if (check) {
     const { x: kingX, y: kingY } = getKing(board, turn);
-    board[kingX][kingY].validAttack = true;
+    board[kingX][kingY].check = true;
   }
+
   // clear display
   boardElement.innerHTML = "";
   capturedElements.forEach(
     (capturedElement) => (capturedElement.innerHTML = "")
   );
+
   // render new display, as per the flip orientation
   board.forEach((row, x) => {
     const rowElement = createRowElement();
@@ -204,6 +226,8 @@ function displayBoard() {
       boardElement.append(rowElement);
     }
   });
+
+  // render captured pieces, as per the flip orientation
   captured.forEach((group, i) =>
     group.forEach((item) => {
       const smallCellElement = createSmallCellElement(item);
@@ -211,6 +235,9 @@ function displayBoard() {
       else capturedElements[i ^ 1].appendChild(smallCellElement);
     })
   );
+
+  if (waitForPromotion) displayModal();
+  else removeModal();
 }
 
 function displayModal() {
@@ -218,6 +245,11 @@ function displayModal() {
   PAWN_PROMOTION.forEach((option) =>
     modalElement.append(createPromotionElement(option))
   );
+  const { top, bottom, left, right } = boardElement.getBoundingClientRect();
+  const x = (top + bottom) / 2;
+  const y = (left + right) / 2;
+  modalElement.style.top = `${x}px`;
+  modalElement.style.left = `${y}px`;
 }
 
 function removeModal() {
@@ -236,9 +268,8 @@ function createCellElement(cell, x, y) {
   cellElement.dataset.symbol = UTF_CODES[cell.name] ?? "";
   cellElement.dataset.x = x;
   cellElement.dataset.y = y;
-  if (cell.selected) cellElement.classList.add("selected");
-  if (cell.validMove) cellElement.classList.add("move");
-  if (cell.validAttack) cellElement.classList.add("danger");
+  if (cell.selected || cell.validMove) cellElement.classList.add("highlight");
+  if (cell.validAttack || cell.check) cellElement.classList.add("danger");
   return cellElement;
 }
 

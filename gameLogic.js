@@ -17,12 +17,14 @@ export function select(board, turn, cellXY, history = []) {
   return cellXY;
 }
 
+// this function clears attributes for highlighted cells
 export function deselect(board) {
   board.forEach((row) =>
     row.forEach((cell) => {
       cell.selected = false;
       cell.validMove = false;
       cell.validAttack = false;
+      cell.check = false;
     })
   );
   return null;
@@ -127,6 +129,7 @@ export function calculateMoves(board, turn, cellXY, history = []) {
       }
     }
   }
+
   // pawns attack differently than they move, recalculate valid attack for pawn
   if (cell.type === "PAWN") {
     validAttacks.length = 0;
@@ -134,8 +137,9 @@ export function calculateMoves(board, turn, cellXY, history = []) {
       const nextX = cellXY.x + direction * del[0];
       const nextY = cellXY.y + direction * del[1];
       if (invalidCell(nextX, nextY)) continue;
-      if (!checkKing(board, turn, cellXY, { x: nextX, y: nextY })) continue;
       const nextColor = board[nextX][nextY].color;
+      if (nextColor === cell.color) continue;
+      if (!checkKing(board, turn, cellXY, { x: nextX, y: nextY })) continue;
       if (nextColor && cell.color !== nextColor) {
         validAttacks.push({ x: nextX, y: nextY });
       }
@@ -153,6 +157,7 @@ export function calculateMoves(board, turn, cellXY, history = []) {
       }
     }
   }
+
   // castling
   if (cell.type === "KING" && !cell.moved) {
     // king side
