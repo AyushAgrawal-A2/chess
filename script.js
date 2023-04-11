@@ -109,8 +109,8 @@ function handleControlsClick(event) {
 
 function handleWindowResize() {
   const vh = window.innerHeight * 0.01;
-  boardElement.style.setProperty("--vh", `${vh}px`);
-  if (waitForPromotion) displayModal();
+  document.documentElement.style.setProperty("--vh", `${vh}px`);
+  displayModal();
 }
 
 function resetGame() {
@@ -231,12 +231,12 @@ function displayBoard() {
     })
   );
 
-  if (waitForPromotion) displayModal();
-  else removeModal();
+  displayModal();
 }
 
 function displayModal() {
-  modalElement.innerHTML = "";
+  removeModal();
+  if (!waitForPromotion) return;
   PAWN_PROMOTION.forEach((option) =>
     modalElement.append(createPromotionElement(option))
   );

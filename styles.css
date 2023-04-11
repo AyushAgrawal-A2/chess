@@ -64,6 +64,7 @@ button:hover {
 .captured {
   background-color: #ebecd0;
   display: flex;
+  justify-content: center;
   align-items: center;
   flex-wrap: wrap;
   height: 3.5rem;
@@ -83,7 +84,7 @@ button:hover {
 }
 
 .row {
-  height: min(calc((100 * var(--vh) - 10.5rem)/8), 12.5vw);
+  height: min(calc((100 * var(--vh) - 10rem)/8), 12.5vw);
   margin: 0 auto;
   aspect-ratio: 8/1;
   display: flex;
@@ -164,11 +165,15 @@ div.cell.danger {
 
   @media (max-height: 775px) {
     .cell {
-      font-size: 2.5rem;
+      font-size: 3.5rem;
+    }
+
+    .cell.small {
+      font-size: 1.5rem;
     }
   }
 
-  @media (max-width: 650px) {
+  @media (max-width: 650px) or (max-height: 650px) {
     .game-controls {
       flex-direction: column;
     }
@@ -179,6 +184,10 @@ div.cell.danger {
 
     .cell {
       font-size: 2.5rem;
+    }
+
+    .cell.small {
+      font-size: 1.5rem;
     }
   }
 }
@@ -195,12 +204,12 @@ div.cell.danger {
   }
 
   .row {
-    height: 12.5vh;
+    height: calc(12.5 * var(--vh));
   }
 
   .captured {
-    height: 12.5vh;
-    width: 33vh;
+    height: calc(12.5 * var(--vh));
+    width: calc(33 * var(--vh));
   }
 
   .game-status {
@@ -208,8 +217,8 @@ div.cell.danger {
     justify-content: center;
     align-items: center;
     text-align: center;
-    height: 25vh;
-    width: 33vh;
+    height: calc(25 * var(--vh));
+    width: calc(33 * var(--vh));
   }
 
   .game-controls {
@@ -218,8 +227,8 @@ div.cell.danger {
     flex-direction: column;
     justify-content: flex-end;
     padding-bottom: 1rem;
-    height: 50vh;
-    width: 33vh;
+    height: calc(50 * var(--vh));
+    width: calc(33 * var(--vh));
   }
 
   @media (max-height: 1000px) or (max-width: 1000px) {
@@ -229,6 +238,12 @@ div.cell.danger {
   }
 
   @media (max-height: 775px) {
+    .cell {
+      font-size: 4.25rem;
+    }
+  }
+
+  @media (max-height: 650px) {
     .game-status {
       font-size: 2rem;
     }
@@ -237,12 +252,6 @@ div.cell.danger {
       font-size: 1rem;
     }
 
-    .cell {
-      font-size: 4.25rem;
-    }
-  }
-
-  @media (max-height: 650px) {
     .cell {
       font-size: 3rem;
     }
