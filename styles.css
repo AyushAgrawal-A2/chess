@@ -83,7 +83,7 @@ button:hover {
 }
 
 .row {
-  height: min(calc((100vh - 10.5rem)/8), 12.5vw);
+  height: min(calc((100 * var(--vh) - 10.5rem)/8), 12.5vw);
   margin: 0 auto;
   aspect-ratio: 8/1;
   display: flex;
@@ -174,7 +174,7 @@ div.cell.danger {
     }
 
     .row {
-      height: min(calc((100vh - 15.5rem)/8), 12.5vw);
+      height: min(calc((100 * var(--vh) - 15rem)/8), 12.5vw);
     }
 
     .cell {
