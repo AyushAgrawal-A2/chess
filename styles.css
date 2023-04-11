@@ -80,7 +80,6 @@ button:hover {
 
 .board {
   grid-area: board;
-  --vh: 1vh;
 }
 
 .row {

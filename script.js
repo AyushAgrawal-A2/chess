@@ -139,6 +139,7 @@ function resetGame() {
   selected = null;
   history = [];
 
+  handleWindowResize();
   // display the new board and game status
   displayGameStatus();
   displayBoard();
