@@ -247,4 +247,22 @@ div.cell.danger {
       font-size: 3rem;
     }
   }
+
+  @media (max-height: 450px) {
+    .game-status {
+      font-size: 1.5rem;
+    }
+
+    .game-controls {
+      font-size: 0.75rem;
+    }
+
+    .cell {
+      font-size: 2rem;
+    }
+
+    .cell.small {
+      font-size: 1rem;
+    }
+  }
 }

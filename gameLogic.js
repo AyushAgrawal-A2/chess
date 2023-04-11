@@ -4,7 +4,7 @@ import { MOVE_RULES, TURN_NAME } from "./gameConstants.js";
 export function select(board, turn, cellXY, history = []) {
   deselect(board);
   const cell = getElement(board, cellXY);
-  if (!cell.name || cell.color !== TURN_NAME[turn]) return null;
+  if (!cell.color || cell.color !== TURN_NAME[turn]) return null;
   const { validMoves, validAttacks } = calculateMoves(
     board,
     turn,
@@ -54,7 +54,7 @@ export function move(board, source, target, history = []) {
   if (
     sourceElement.type === "PAWN" &&
     targetElement.validAttack &&
-    !targetElement.name &&
+    !targetElement.color &&
     source.y !== target.y
   ) {
     const pawnSource = { x: source.x, y: target.y };
@@ -103,7 +103,7 @@ export function calculateMoves(board, turn, cellXY, history = []) {
   const validMoves = [],
     validAttacks = [];
   const cell = getElement(board, cellXY);
-  if (!cell.name || cell.color !== TURN_NAME[turn])
+  if (!cell.color || cell.color !== TURN_NAME[turn])
     return { validMoves, validAttacks };
   const direction = cell.color === "WHITE" ? -1 : 1;
   const maxMoves = MOVE_RULES[cell.type].unlimited
@@ -178,7 +178,7 @@ function checkCastling(board, turn, kingXY, validMoves, dir) {
 
   // cell in between king & rook should be empty
   for (let y = kingXY.y + dir; y !== rookXY.y; y += dir) {
-    if (board[kingXY.x][y].name) return;
+    if (board[kingXY.x][y].color) return;
   }
 
   // king should not be under attack, pass through or end up under attack
@@ -248,7 +248,7 @@ export function getKing(board, turn) {
   let x, y;
   board.find((row, r) =>
     row.find((cell, c) => {
-      if (cell.name === TURN_NAME[turn] + "_KING") {
+      if (cell.color === TURN_NAME[turn] && cell.type === "KING") {
         x = r;
         y = c;
         return true;

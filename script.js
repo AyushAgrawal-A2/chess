@@ -48,6 +48,7 @@ function handleBoardClick(event) {
   if (waitForPromotion) return;
 
   if (!event.target.dataset.x) return;
+
   // get x, y coordinate of the clicked cell
   const cellXY = {
     x: parseInt(event.target.dataset.x),
@@ -55,11 +56,7 @@ function handleBoardClick(event) {
   };
 
   // if no piece is selected, select this piece and highlight valid moves / attacks
-  if (!selected) {
-    if (!event.target.dataset.symbol) return;
-    selected = select(board, turn, cellXY, history);
-  }
-
+  if (!selected) selected = select(board, turn, cellXY, history);
   // if already a piece is selected, either make a move to this cell or deselect the previous piece.
   else {
     const cell = board[cellXY.x][cellXY.y];
@@ -81,17 +78,11 @@ function handleBoardClick(event) {
       if (move(board, selected, cellXY, history)) turn ^= 1;
       // change pawn promotion flag and display modal
       else waitForPromotion = true;
-      selected = deselect(board);
       displayGameStatus();
     }
 
     // if any other piece is clicked, select this piece
-    else if (event.target.dataset.symbol) {
-      selected = select(board, turn, cellXY, history);
-    }
-
-    // empty cell is clicked which is not a valid move, deselect the previous piece
-    else selected = deselect(board);
+    else selected = select(board, turn, cellXY, history);
   }
   // render the changed board to display
   displayBoard();
@@ -99,10 +90,11 @@ function handleBoardClick(event) {
 
 function handleModalClick(event) {
   if (!waitForPromotion) return;
-  if (!event.target.dataset.name) return;
-  promotePawn(board, event.target.dataset.name);
+  const name = event.target.dataset.name;
+  if (!name) return;
   waitForPromotion = false;
   turn ^= 1;
+  promotePawn(board, name);
   displayGameStatus();
   displayBoard();
 }
@@ -166,11 +158,9 @@ function undo() {
   if (history.length === 0) return;
   const prevMove = history.pop();
   turn = prevMove.sourceElement.color === "WHITE" ? 0 : 1;
-  if (flipEveryMove) flip = turn ? true : false;
+  waitForPromotion = false;
   if (prevMove.attack) captured[turn].pop();
   undoMove(board, prevMove);
-  selected = deselect(board);
-  waitForPromotion = false;
   displayGameStatus();
   displayBoard();
 }
@@ -182,7 +172,9 @@ function displayGameStatus() {
   // check if the king is in check status
   check = !checkKing(board, turn, { x: 0, y: 0 }, { x: 0, y: 0 });
 
+  selected = deselect(board);
   if (flipEveryMove) flip = turn ? true : false;
+
   if (turn) gameStatus = "Black's Turn";
   else gameStatus = "White's Turn";
 
