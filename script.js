@@ -76,10 +76,15 @@ function handleBoardClick(event) {
       }
 
       // if move is complete change turn, else pawn needs to be promoted
-      if (move(board, selected, cellXY, history)) turn ^= 1;
+      if (move(board, selected, cellXY, history)) {
+        turn ^= 1;
+        displayGameStatus();
+      }
       // change pawn promotion flag and display modal
-      else waitForPromotion = true;
-      displayGameStatus();
+      else {
+        waitForPromotion = true;
+        selected = select(board, turn, cellXY, history);
+      }
     }
 
     // if any other piece is clicked, select this piece
