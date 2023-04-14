@@ -133,11 +133,11 @@ function resetGame() {
     }))
   );
 
-  // select first turn randomly
-  turn = Math.floor(Math.random() * 2);
+  // white will move first
+  turn = 0;
 
   // orient the board as per the turn
-  flip = turn ? true : false;
+  flip = false;
   waitForPromotion = false;
 
   // empty captured and selected variables
