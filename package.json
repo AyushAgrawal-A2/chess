@@ -1,0 +1,19 @@
+{
+  "name": "chess",
+  "version": "1.0.0",
+  "description": "",
+  "main": "botLogic.js",
+  "source": "./index.html",
+  "scripts": {
+    "start": "parcel",
+    "build": "parcel build"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@ibrahimdeniz/chess-js": "^0.1.2"
+  },
+  "devDependencies": {
+    "parcel": "^2.8.3"
+  }
+}

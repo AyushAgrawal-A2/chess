@@ -1,3 +1,4 @@
+import { PIECE, getMove, parseLocation } from "./botLogic.js";
 import {
   DEFAULT_BOARD,
   UTF_CODES,
@@ -31,6 +32,7 @@ window.addEventListener("resize", handleWindowResize);
 // flip is false for rendering white at bottom
 let board,
   turn,
+  bot,
   captured,
   selected,
   history,
@@ -44,6 +46,7 @@ let board,
 resetGame();
 
 function handleBoardClick(event) {
+  if (turn === bot) return;
   // if pawn has to be promoted, ignore board clicks
   if (waitForPromotion) return;
 
@@ -68,22 +71,7 @@ function handleBoardClick(event) {
 
     // if a valid move / attack is selected make the move
     else if (cell.validMove || cell.validAttack) {
-      if (cell.validAttack) {
-        captured[turn].push(
-          cell.name !== "" ? cell.name : TURN_NAME[turn ^ 1] + "_PAWN"
-        );
-      }
-
-      // if move is complete change turn, else pawn needs to be promoted
-      if (move(board, selected, cellXY, history)) {
-        turn ^= 1;
-        displayGameStatus();
-      }
-      // change pawn promotion flag and display modal
-      else {
-        waitForPromotion = true;
-        selected = select(board, turn, cellXY, history);
-      }
+      initiateMove(cellXY);
     }
 
     // if any other piece is clicked, select this piece
@@ -97,9 +85,50 @@ function handleModalClick(event) {
   if (!waitForPromotion) return;
   const name = event.target.dataset.name;
   if (!name) return;
+  promote(name);
+}
+
+function initiateMove(target) {
+  const targetElement = board[target.x][target.y];
+  if (targetElement.validAttack) {
+    captured[turn].push(
+      targetElement.name !== ""
+        ? targetElement.name
+        : TURN_NAME[turn ^ 1] + "_PAWN"
+    );
+  }
+
+  // if move is complete change turn, else pawn needs to be promoted
+  if (move(board, selected, target, history)) {
+    changeTurn();
+    displayGameStatus();
+  }
+  // change pawn promotion flag and display modal
+  else {
+    waitForPromotion = true;
+    selected = select(board, turn, target, history);
+  }
+}
+
+function botMove() {
+  if (turn !== bot) return;
+  const nextMove = getMove(board, turn, history);
+  console.log(nextMove);
+  const source = parseLocation(nextMove.from);
+  selected = select(board, turn, source, history);
+  const target = parseLocation(nextMove.to);
+  initiateMove(target);
+  if (nextMove.promotion) {
+    const name = TURN_NAME[turn] + "_" + PIECE[nextMove.promotion];
+    promote(name);
+  }
+  displayBoard();
+}
+
+function promote(name) {
   waitForPromotion = false;
-  turn ^= 1;
   promotePawn(board, name);
+  changeTurn();
   displayGameStatus();
   displayBoard();
 }
@@ -134,9 +163,10 @@ function resetGame() {
 
   // white will move first
   turn = 0;
+  bot = Math.floor(Math.random() * 2);
 
   // orient the board as per the turn
-  flip = false;
+  flip = bot == 0;
   waitForPromotion = false;
 
   // empty captured and selected variables
@@ -148,6 +178,11 @@ function resetGame() {
   // display the new board and game status
   displayGameStatus();
   displayBoard();
+}
+
+function changeTurn() {
+  turn ^= 1;
+  selected = deselect(board);
 }
 
 function flipBoard() {
@@ -235,8 +270,8 @@ function displayBoard() {
       else capturedElements[i ^ 1].appendChild(smallCellElement);
     })
   );
-
   displayModal();
+  botMove();
 }
 
 function displayModal() {
