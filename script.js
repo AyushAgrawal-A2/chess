@@ -26,7 +26,6 @@ boardElement.addEventListener("click", handleBoardClick);
 modalElement.addEventListener("click", handleModalClick);
 gameControls.addEventListener("click", handleControlsClick);
 window.addEventListener("resize", handleWindowResize);
-window.screen.orientation.addEventListener("change", handleWindowResize);
 
 // turn is 0 for white, 1 for black
 // flip is false for rendering white at bottom
