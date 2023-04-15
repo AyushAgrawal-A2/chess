@@ -1,4 +1,3 @@
-import { PIECE, getMove, parseLocation } from "./botLogic.js";
 import {
   DEFAULT_BOARD,
   UTF_CODES,
@@ -16,6 +15,7 @@ import {
   undoMove,
   promotePawn,
 } from "./gameLogic.js";
+import { PIECE, getMove, parseLocation } from "./botLogic.js";
 
 const boardElement = document.querySelector(".board");
 const capturedElements = document.querySelectorAll(".captured");
