@@ -33,31 +33,18 @@ body {
   justify-self: end;
   display: flex;
   align-items: center;
-  column-gap: 0.5rem;
-  row-gap: 0.5rem;
-  font-size: 1.25rem;
-  color: #779556;
-  padding: 0.25rem 0.5rem;
+  column-gap: 1rem;
+  padding: 0.5rem 0.5rem;
 }
 
-button {
+img {
   background-color: #ebecd0;
-  color: inherit;
-  font-size: inherit;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 0.75rem;
-  display: flex;
-  align-items: center;
-  column-gap: 0.5rem;
+  padding: 0.25rem 0.25rem;
+  border-radius: 0.5rem;
+  height: 2.5rem;
 }
 
-input#flip-checkbox {
-  height: 1.25rem;
-  width: 1.25rem;
-}
-
-button:hover {
+img:hover {
   background-color: #f3f3e2;
 }
 
@@ -150,14 +137,6 @@ div.cell.danger {
   }
 
   @media (max-width: 800px) or (max-height: 1000px) {
-    .game-status {
-      font-size: 2rem;
-    }
-
-    .game-controls {
-      font-size: 1rem;
-    }
-
     .cell {
       font-size: 4.25rem;
     }
@@ -174,20 +153,8 @@ div.cell.danger {
   }
 
   @media (max-width: 650px) or (max-height: 650px) {
-    .game-controls {
-      flex-direction: column;
-    }
-
-    .row {
-      height: min(calc((100 * var(--vh) - 15rem)/8), 12.5vw);
-    }
-
     .cell {
       font-size: 2.5rem;
-    }
-
-    .cell.small {
-      font-size: 1.5rem;
     }
   }
 }
@@ -222,10 +189,8 @@ div.cell.danger {
   }
 
   .game-controls {
-    gap: 0.5rem;
-    justify-self: center;
-    flex-direction: column;
-    justify-content: flex-end;
+    align-items: end;
+    justify-content: center;
     padding-bottom: 1rem;
     height: calc(50 * var(--vh));
     width: calc(33 * var(--vh));
@@ -248,23 +213,18 @@ div.cell.danger {
       font-size: 2rem;
     }
 
-    .game-controls {
-      font-size: 1rem;
-    }
-
     .cell {
       font-size: 3rem;
+    }
+
+    .cell.small {
+      font-size: 1.5rem;
     }
   }
 
   @media (max-height: 450px) {
     .game-status {
       font-size: 1.5rem;
-    }
-
-    .game-controls {
-      font-size: 0.75rem;
-      padding: 0.15rem 0.15rem;
     }
 
     .cell {
