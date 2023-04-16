@@ -76,17 +76,10 @@ export function move(board, source, target, history = []) {
   return true;
 }
 
-export function promotePawn(board, name) {
-  board.find((row, x) => {
-    if (x !== 0 && x !== 7) return false;
-    return row.find((cell) => {
-      if (cell.type === "PAWN") {
-        cell.name = name;
-        [cell.color, cell.type] = name.split("_");
-        return true;
-      }
-    });
-  });
+export function promotePawn(board, cellXY, name) {
+  const cell = getElement(board, cellXY);
+  cell.name = name;
+  [cell.color, cell.type] = name.split("_");
 }
 
 export function undoMove(board, prevMove) {
