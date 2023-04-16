@@ -42,14 +42,10 @@ let board,
   check,
   canMove,
   gameStatus,
-  waitForPromotion;
+  waitForPromotion,
+  start;
 
 resetGame();
-
-function handleControlsClick(event) {
-  if (event.target.classList.contains("undo")) undo();
-  else if (event.target.classList.contains("reset")) resetGame();
-}
 
 function handleWindowResize() {
   const vh = window.innerHeight * 0.01;
@@ -57,8 +53,23 @@ function handleWindowResize() {
   displayModal();
 }
 
+function handleControlsClick(event) {
+  if (!start) {
+    start = true;
+    displayGameStatus();
+    displayBoard();
+  }
+  if (event.target.classList.contains("undo")) undo();
+  else if (event.target.classList.contains("reset")) resetGame();
+}
+
 // user interactions
 function handleBoardClick(event) {
+  if (!start) {
+    start = true;
+    displayGameStatus();
+    displayBoard();
+  }
   if (turn === bot) return;
   // if pawn has to be promoted, ignore board clicks
   if (waitForPromotion) return;
@@ -176,6 +187,8 @@ function resetGame() {
   captured = [[], []];
   selected = null;
   history = [];
+  start = false;
+  gameStatus = "Click to start...";
 
   handleWindowResize();
   // display the new board and game status
@@ -200,29 +213,31 @@ function undo() {
 }
 
 function displayGameStatus() {
-  // check if there are any possible moves
-  canMove = canPlayerMove(board, turn, history);
+  if (start) {
+    // check if there are any possible moves
+    canMove = canPlayerMove(board, turn, history);
 
-  // check if the king is in check status
-  check = !checkKing(board, turn, { x: 0, y: 0 }, { x: 0, y: 0 });
+    // check if the king is in check status
+    check = !checkKing(board, turn, { x: 0, y: 0 }, { x: 0, y: 0 });
 
-  selected = deselect(board);
-  if (flipEveryMove) flip = turn ? true : false;
+    selected = deselect(board);
+    if (flipEveryMove) flip = turn ? true : false;
 
-  if (turn) gameStatus = "Black's Turn";
-  else gameStatus = "White's Turn";
+    if (turn) gameStatus = "Black's Turn";
+    else gameStatus = "White's Turn";
 
-  // if king is in check, add in status
-  if (check && canMove) gameStatus += " - Check";
-  // if king is in check and there are no moves left, other player won
-  else if (check && !canMove) {
-    gameStatus = turn === 0 ? "Black Won..!!" : "White Won..!!";
-    audioElements[2].play();
-  }
-  // if king is not in check and no moves left, stale mate / draw
-  else if (!check && !canMove) {
-    gameStatus = "Draw..!!";
-    audioElements[2].play();
+    // if king is in check, add in status
+    if (check && canMove) gameStatus += " - Check";
+    // if king is in check and there are no moves left, other player won
+    else if (check && !canMove) {
+      gameStatus = turn === 0 ? "Black Won..!!" : "White Won..!!";
+      audioElements[2].play();
+    }
+    // if king is not in check and no moves left, stale mate / draw
+    else if (!check && !canMove) {
+      gameStatus = "Draw..!!";
+      audioElements[2].play();
+    }
   }
 
   gameStatusElement.textContent = gameStatus;
@@ -267,7 +282,7 @@ function displayBoard() {
     })
   );
   displayModal();
-  setTimeout(() => botMove(), 1000);
+  if (start) setTimeout(() => botMove(), 1000);
 }
 
 function displayModal() {
