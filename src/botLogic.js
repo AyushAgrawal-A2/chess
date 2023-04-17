@@ -1,5 +1,5 @@
 import { castlingRight } from "./gameLogic";
-import { ChessAI } from "./node_modules/@ibrahimdeniz/chess-js";
+import { ChessAI } from "@ibrahimdeniz/chess-js";
 
 export const PIECE = {
   p: "PAWN",
