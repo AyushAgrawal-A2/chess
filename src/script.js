@@ -38,12 +38,12 @@ let board,
   selected,
   history,
   flip,
-  flipEveryMove = false,
   check,
   canMove,
   gameStatus,
   waitForPromotion,
-  start;
+  start,
+  timeoutID;
 
 resetGame();
 
@@ -53,23 +53,20 @@ function handleWindowResize() {
   displayModal();
 }
 
+function startGame() {
+  start = true;
+  displayGameStatus();
+  displayBoard();
+}
+
 function handleControlsClick(event) {
-  if (!start) {
-    start = true;
-    displayGameStatus();
-    displayBoard();
-  }
   if (event.target.classList.contains("undo")) undo();
   else if (event.target.classList.contains("reset")) resetGame();
 }
 
 // user interactions
 function handleBoardClick(event) {
-  if (!start) {
-    start = true;
-    displayGameStatus();
-    displayBoard();
-  }
+  if (!start) startGame();
   if (turn === bot) return;
   // if pawn has to be promoted, ignore board clicks
   if (waitForPromotion) return;
@@ -175,16 +172,11 @@ function resetGame() {
     }))
   );
 
-  // white will move first
-  turn = 0;
+  turn = 0; // white will move first
   bot = Math.floor(Math.random() * 2);
-
-  // orient the board as per the turn
-  flip = bot == 0;
+  flip = bot == 0; // orient the board as per the turn
   waitForPromotion = false;
-
-  // empty captured and selected variables
-  captured = [[], []];
+  captured = [[], []]; // empty captured and selected variables
   selected = null;
   history = [];
   start = false;
@@ -221,7 +213,6 @@ function displayGameStatus() {
     check = !checkKing(board, turn, { x: 0, y: 0 }, { x: 0, y: 0 });
 
     selected = deselect(board);
-    if (flipEveryMove) flip = turn ? true : false;
 
     if (turn) gameStatus = "Black's Turn";
     else gameStatus = "White's Turn";
@@ -282,7 +273,10 @@ function displayBoard() {
     })
   );
   displayModal();
-  if (start) setTimeout(() => botMove(), 1000);
+  if (start) {
+    clearTimeout(timeoutID);
+    timeoutID = setTimeout(() => botMove(), 1000);
+  }
 }
 
 function displayModal() {
