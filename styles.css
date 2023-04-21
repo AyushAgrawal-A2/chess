@@ -18,6 +18,19 @@ body {
     "board board"
     "captured-bottom captured-bottom";
   align-items: center;
+  --height: min(calc((100 * var(--vh) - 3.5rem) / 9), 12.5vw);
+}
+
+.captured.top {
+  grid-area: captured-top;
+}
+
+.captured.bottom {
+  grid-area: captured-bottom;
+}
+
+.board {
+  grid-area: board;
 }
 
 .game-status {
@@ -43,6 +56,7 @@ img {
   padding: 0.25rem 0.25rem;
   border-radius: 0.5rem;
   height: 2.5rem;
+  max-height: var(--height);
 }
 
 img:hover {
@@ -55,45 +69,26 @@ img:hover {
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
-  height: 3.5rem;
+  height: calc(0.5 * var(--height));
   border: 1px solid black;
 }
 
-.captured.top {
-  grid-area: captured-top;
-}
-
-.captured.bottom {
-  grid-area: captured-bottom;
-}
-
-.board {
-  grid-area: board;
-}
-
 .row {
-  height: min(calc((100 * var(--vh) - 10em)/8), 12.5vw);
-  margin: 0 auto;
   aspect-ratio: 8/1;
+  height: var(--height);
+  margin: auto;
   display: flex;
 }
 
 .cell {
   aspect-ratio: 1/1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   border: 1px solid black;
-  font-size: 6.5rem;
+  background-size: contain;
 }
 
 .cell.small {
-  font-size: 2.5rem;
   border: none;
-}
-
-.cell::before {
-  content: attr(data-symbol);
+  height: calc(0.5 * var(--height));
 }
 
 .row:nth-child(odd) .cell:nth-child(odd),
@@ -127,43 +122,14 @@ div.cell.danger {
 
 .modal .cell {
   border: none;
+  height: var(--height);
 }
 
 /* portrait scaling */
 @media (max-aspect-ratio: 4/3) {
-  @media (max-width: 1000px) or (max-height: 1200px) {
-    .cell {
-      font-size: 5rem;
-    }
-  }
-
-  @media (max-width: 800px) or (max-height: 1000px) {
-    .cell {
-      font-size: 4.25rem;
-    }
-  }
-
-  @media (max-height: 775px) {
-    .cell {
-      font-size: 3.5rem;
-    }
-
-    .cell.small {
+  @media (max-width: 500px) {
+    .game-status {
       font-size: 1.5rem;
-    }
-  }
-
-  @media (max-width: 650px) or (max-height: 650px) {
-    .game-controls {
-      flex-direction: column;
-    }
-
-    .row {
-      height: min(calc((100 * var(--vh) - 14rem)/8), 12.5vw);
-    }
-
-    .cell {
-      font-size: 2.5rem;
     }
   }
 }
@@ -177,14 +143,11 @@ div.cell.danger {
       "board controls"
       "board captured-bottom";
     justify-content: center;
-  }
-
-  .row {
-    height: calc(12.5 * var(--vh));
+    --height: calc(12.5 * var(--vh));
   }
 
   .captured {
-    height: calc(12.5 * var(--vh));
+    height: calc(1.5 * var(--height));
     width: calc(33 * var(--vh));
   }
 
@@ -193,7 +156,7 @@ div.cell.danger {
     justify-content: center;
     align-items: center;
     text-align: center;
-    height: calc(25 * var(--vh));
+    height: calc(3 * var(--height));
     width: calc(33 * var(--vh));
   }
 
@@ -201,47 +164,19 @@ div.cell.danger {
     align-items: end;
     justify-content: center;
     padding-bottom: 1rem;
-    height: calc(50 * var(--vh));
+    height: calc(2 * var(--height));
     width: calc(33 * var(--vh));
-  }
-
-  @media (max-height: 1000px) or (max-width: 1000px) {
-    .cell {
-      font-size: 5rem;
-    }
-  }
-
-  @media (max-height: 775px) {
-    .cell {
-      font-size: 4.25rem;
-    }
   }
 
   @media (max-height: 650px) {
     .game-status {
       font-size: 2rem;
     }
-
-    .cell {
-      font-size: 3rem;
-    }
-
-    .cell.small {
-      font-size: 1.5rem;
-    }
   }
 
   @media (max-height: 450px) {
     .game-status {
       font-size: 1.5rem;
-    }
-
-    .cell {
-      font-size: 2rem;
-    }
-
-    .cell.small {
-      font-size: 1rem;
     }
   }
 }

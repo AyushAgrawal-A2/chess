@@ -1,9 +1,4 @@
-import {
-  DEFAULT_BOARD,
-  UTF_CODES,
-  TURN_NAME,
-  PAWN_PROMOTION,
-} from "./gameConstants.js";
+import { DEFAULT_BOARD, TURN_NAME, PAWN_PROMOTION } from "./gameConstants.js";
 
 import {
   select,
@@ -305,7 +300,10 @@ function createRowElement() {
 function createCellElement(cell, x, y) {
   const cellElement = document.createElement("div");
   cellElement.className = "cell";
-  cellElement.dataset.symbol = UTF_CODES[cell.name] ?? "";
+  if (cell.name) {
+    const path = `assets/image/pieces/${cell.name}.png`;
+    cellElement.style.backgroundImage = `url(${path})`;
+  }
   cellElement.dataset.x = x;
   cellElement.dataset.y = y;
   if (cell.selected || cell.validMove) cellElement.classList.add("highlight");
@@ -313,10 +311,11 @@ function createCellElement(cell, x, y) {
   return cellElement;
 }
 
-function createSmallCellElement(item) {
+function createSmallCellElement(name) {
   const smallCellElement = document.createElement("div");
   smallCellElement.className = "cell small";
-  smallCellElement.dataset.symbol = UTF_CODES[item] ?? "";
+  const path = `assets/image/pieces/${name}.png`;
+  smallCellElement.style.backgroundImage = `url(${path})`;
   return smallCellElement;
 }
 
@@ -324,7 +323,8 @@ function createPromotionElement(option) {
   const promotionElement = document.createElement("div");
   const name = TURN_NAME[turn] + "_" + option;
   promotionElement.className = "cell";
-  promotionElement.dataset.symbol = UTF_CODES[name];
+  const path = `assets/image/pieces/${name}.png`;
+  promotionElement.style.backgroundImage = `url(${path})`;
   promotionElement.dataset.name = name;
   return promotionElement;
 }
