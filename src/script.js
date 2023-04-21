@@ -45,7 +45,7 @@ resetGame();
 function handleWindowResize() {
   const vh = window.innerHeight * 0.01;
   document.documentElement.style.setProperty("--vh", `${vh}px`);
-  displayModal();
+  displayBoard();
 }
 
 function startGame() {
@@ -225,7 +225,6 @@ function displayGameStatus() {
       audioElements[2].play();
     }
   }
-
   gameStatusElement.textContent = gameStatus;
 }
 
